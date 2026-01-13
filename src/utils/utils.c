@@ -490,6 +490,29 @@ char *load_file(const char *fn)
     FILE *f = fopen(fn, "rb");
     if (!f)
     {
+        char *root = getenv("ZC_ROOT");
+        if (root)
+        {
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/%s", root, fn);
+            f = fopen(path, "rb");
+        }
+    }
+    if (!f)
+    {
+        char path[1024];
+        snprintf(path, sizeof(path), "/usr/local/share/zenc/%s", fn);
+        f = fopen(path, "rb");
+    }
+    if (!f)
+    {
+        char path[1024];
+        snprintf(path, sizeof(path), "/usr/share/zenc/%s", fn);
+        f = fopen(path, "rb");
+    }
+
+    if (!f)
+    {
         return 0;
     }
     fseek(f, 0, SEEK_END);
