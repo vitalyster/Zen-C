@@ -2240,7 +2240,7 @@ ASTNode *parse_expr_prec(ParserContext *ctx, Lexer *l, Precedence min_prec)
             }
 
             // Reuse printf sugar to generate the prompt print
-            char *print_code = process_printf_sugar(ctx, inner, 0, "stdout");
+            char *print_code = process_printf_sugar(ctx, inner, 0, "stdout", NULL, NULL);
             free(inner);
 
             // Checks for (args...) suffix for SCAN mode
@@ -2405,7 +2405,7 @@ ASTNode *parse_expr_prec(ParserContext *ctx, Lexer *l, Precedence min_prec)
                 newline = 0;
             }
 
-            char *code = process_printf_sugar(ctx, inner, newline, "stderr");
+            char *code = process_printf_sugar(ctx, inner, newline, "stderr", NULL, NULL);
             free(inner);
 
             ASTNode *n = ast_create(NODE_RAW_STMT);

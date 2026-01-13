@@ -306,9 +306,9 @@ int main(int argc, char **argv)
     // TCC-specific adjustments?
     // Already handled by user passing --cc tcc
 
-    snprintf(cmd, sizeof(cmd), "%s %s %s %s %s -o %s out.c -lm -lpthread -I./src %s", g_config.cc,
+    snprintf(cmd, sizeof(cmd), "%s %s %s %s %s -o %s out.c -lm %s -I./src %s", g_config.cc,
              g_config.gcc_flags, g_cflags, g_config.is_freestanding ? "-ffreestanding" : "", "",
-             outfile, g_link_flags);
+             outfile, g_parser_ctx->has_async ? "-lpthread" : "", g_link_flags);
 
     if (g_config.verbose)
     {

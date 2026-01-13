@@ -416,6 +416,8 @@ struct ASTNode
         struct
         {
             char *content;
+            char **used_symbols;
+            int used_symbol_count;
         } raw_stmt;
 
         struct

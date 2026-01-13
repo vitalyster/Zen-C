@@ -265,6 +265,7 @@ struct ParserContext
     FILE *hoist_out;   // For plugins to hoist code to file scope
     int skip_preamble; // If 1, codegen_node(NODE_ROOT) won't emit preamble
     int is_repl;       // REPL mode flag
+    int has_async;     // Track if async features are used
 };
 
 // Token helpers
@@ -376,7 +377,7 @@ void init_builtins();
 
 // Expression rewriting
 char *rewrite_expr_methods(ParserContext *ctx, char *raw);
-char *process_fstring(ParserContext *ctx, const char *content);
+char *process_fstring(ParserContext *ctx, const char *content, char ***used_syms, int *count);
 char *instantiate_function_template(ParserContext *ctx, const char *name,
                                     const char *concrete_type);
 FuncSig *find_func(ParserContext *ctx, const char *name);
@@ -408,8 +409,8 @@ ASTNode *parse_guard(ParserContext *ctx, Lexer *l);
 ASTNode *parse_match(ParserContext *ctx, Lexer *l);
 ASTNode *parse_return(ParserContext *ctx, Lexer *l);
 
-char *process_printf_sugar(ParserContext *ctx, const char *content, int newline,
-                           const char *target);
+char *process_printf_sugar(ParserContext *ctx, const char *content, int newline, const char *target,
+                           char ***used_syms, int *count);
 ASTNode *parse_assert(ParserContext *ctx, Lexer *l);
 ASTNode *parse_defer(ParserContext *ctx, Lexer *l);
 ASTNode *parse_asm(ParserContext *ctx, Lexer *l);

@@ -1554,7 +1554,7 @@ char *instantiate_function_template(ParserContext *ctx, const char *name, const 
     return mangled;
 }
 
-char *process_fstring(ParserContext *ctx, const char *content)
+char *process_fstring(ParserContext *ctx, const char *content, char ***used_syms, int *count)
 {
     (void)ctx; // suppress unused parameter warning
     char *gen = xmalloc(4096);
@@ -1619,6 +1619,36 @@ char *process_fstring(ParserContext *ctx, const char *content)
         {
             *colon = 0;
             fmt = colon + 1;
+        }
+
+        // Analyze usage in expression
+        {
+            Lexer lex;
+            lexer_init(&lex, expr);
+            Token t;
+            while ((t = lexer_next(&lex)).type != TOK_EOF)
+            {
+                if (t.type == TOK_IDENT)
+                {
+                    char *name = token_strdup(t);
+                    Symbol *sym = find_symbol_entry(ctx, name);
+                    if (sym)
+                    {
+                        sym->is_used = 1;
+                    }
+
+                    if (used_syms && count)
+                    {
+                        *used_syms = xrealloc(*used_syms, sizeof(char *) * (*count + 1));
+                        (*used_syms)[*count] = name;
+                        (*count)++;
+                    }
+                    else
+                    {
+                        free(name);
+                    }
+                }
+            }
         }
 
         if (fmt)

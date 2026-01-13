@@ -8,7 +8,7 @@
 #include <string.h>
 
 // Emit C preamble with standard includes and type definitions.
-void emit_preamble(FILE *out)
+void emit_preamble(ParserContext *ctx, FILE *out)
 {
     if (g_config.is_freestanding)
     {
@@ -54,8 +54,11 @@ void emit_preamble(FILE *out)
         fputs("#include <unistd.h>\n#include <fcntl.h>\n", out); // POSIX functions
         fputs("#ifdef __TINYC__\n#define __auto_type __typeof__\n#endif\n", out);
         fputs("typedef size_t usize;\ntypedef char* string;\n", out);
-        fputs("#include <pthread.h>\n", out);
-        fputs("typedef struct { pthread_t thread; void *result; } Async;\n", out);
+        if (ctx->has_async)
+        {
+            fputs("#include <pthread.h>\n", out);
+            fputs("typedef struct { pthread_t thread; void *result; } Async;\n", out);
+        }
         fputs("typedef struct { void *func; void *ctx; } z_closure_T;\n", out);
         fputs("#define U0 void\n#define I8 int8_t\n#define U8 uint8_t\n#define I16 "
               "int16_t\n#define U16 uint16_t\n",

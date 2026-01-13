@@ -24,7 +24,7 @@ const char *parse_original_method_name(const char *mangled);
 void emit_auto_type(ParserContext *ctx, ASTNode *init_expr, Token t, FILE *out);
 
 // Declaration emission  (codegen_decl.c).
-void emit_preamble(FILE *out);
+void emit_preamble(ParserContext *ctx, FILE *out);
 void emit_includes_and_aliases(ASTNode *node, FILE *out);
 void emit_struct_defs(ParserContext *ctx, ASTNode *node, FILE *out);
 void emit_trait_defs(ASTNode *node, FILE *out);

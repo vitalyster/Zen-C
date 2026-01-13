@@ -37,6 +37,11 @@ ASTNode *parse_function(ParserContext *ctx, Lexer *l, int is_async)
     Token name_tok = lexer_next(l);
     char *name = token_strdup(name_tok);
 
+    if (is_async)
+    {
+        ctx->has_async = 1;
+    }
+
     // Check for C reserved word conflict
     if (is_c_reserved_word(name))
     {
@@ -1668,7 +1673,8 @@ ASTNode *parse_for(ParserContext *ctx, Lexer *l)
     return n;
 }
 
-char *process_printf_sugar(ParserContext *ctx, const char *content, int newline, const char *target)
+char *process_printf_sugar(ParserContext *ctx, const char *content, int newline, const char *target,
+                           char ***used_syms, int *count)
 {
     char *gen = xmalloc(8192);
     strcpy(gen, "({ ");
@@ -1760,12 +1766,34 @@ char *process_printf_sugar(ParserContext *ctx, const char *content, int newline,
             clean_expr++; // Skip leading spaces
         }
 
-        // Mark the variable as used (fixes "Unused variable" warnings for f-string
-        // interpolation)
-        Symbol *sym = find_symbol_entry(ctx, clean_expr);
-        if (sym)
+        // Analyze usage
         {
-            sym->is_used = 1;
+            Lexer lex;
+            lexer_init(&lex, clean_expr);
+            Token t;
+            while ((t = lexer_next(&lex)).type != TOK_EOF)
+            {
+                if (t.type == TOK_IDENT)
+                {
+                    char *name = token_strdup(t);
+                    Symbol *sym = find_symbol_entry(ctx, name);
+                    if (sym)
+                    {
+                        sym->is_used = 1;
+                    }
+
+                    if (used_syms && count)
+                    {
+                        *used_syms = xrealloc(*used_syms, sizeof(char *) * (*count + 1));
+                        (*used_syms)[*count] = name;
+                        (*count)++;
+                    }
+                    else
+                    {
+                        free(name);
+                    }
+                }
+            }
         }
 
         char *type = find_symbol_type(ctx, clean_expr);
@@ -2092,7 +2120,9 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
 
             // ; means println (end of line), .. means print (continuation)
             int is_ln = (next_type == TOK_SEMICOLON);
-            char *code = process_printf_sugar(ctx, inner, is_ln, "stdout");
+            char **used_syms = NULL;
+            int used_count = 0;
+            char *code = process_printf_sugar(ctx, inner, is_ln, "stdout", &used_syms, &used_count);
 
             if (next_type == TOK_SEMICOLON)
             {
@@ -2109,6 +2139,8 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
 
             ASTNode *n = ast_create(NODE_RAW_STMT);
             n->raw_stmt.content = code;
+            n->raw_stmt.used_symbols = used_syms;
+            n->raw_stmt.used_symbol_count = used_count;
             free(inner);
             return n;
         }
@@ -2501,7 +2533,9 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
                 inner[t.len - 2] = 0;
             }
 
-            char *code = process_printf_sugar(ctx, inner, is_ln, target);
+            char **used_syms = NULL;
+            int used_count = 0;
+            char *code = process_printf_sugar(ctx, inner, is_ln, target, &used_syms, &used_count);
             free(inner);
 
             if (lexer_peek(l).type == TOK_SEMICOLON)
@@ -2511,6 +2545,8 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
 
             ASTNode *n = ast_create(NODE_RAW_STMT);
             n->raw_stmt.content = code;
+            n->raw_stmt.used_symbols = used_syms;
+            n->raw_stmt.used_symbol_count = used_count;
             return n;
         }
     }
@@ -3876,7 +3912,7 @@ char *run_comptime_block(ParserContext *ctx, Lexer *l)
         zpanic("Could not create temp file %s", filename);
     }
 
-    emit_preamble(f);
+    emit_preamble(ctx, f);
     fprintf(
         f,
         "size_t _z_check_bounds(size_t index, size_t size) { if (index >= size) { fprintf(stderr, "
