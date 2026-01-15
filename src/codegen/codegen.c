@@ -10,6 +10,14 @@
 #include "ast.h"
 #include "zprep_plugin.h"
 
+#ifdef __APPLE__
+#define SEGMENT_NAME_PREFIX "__TEXT,"
+#define SEGMENT_NAME_SUFFIX ",regular,pure_instructions"
+#else
+#define SEGMENT_NAME_PREFIX ""
+#define SEGMENT_NAME_SUFFIX ""
+#endif
+
 // static function for internal use.
 static char *g_current_func_ret_type = NULL;
 static void codegen_match_internal(ParserContext *ctx, ASTNode *node, FILE *out, int use_result)
@@ -1367,7 +1375,7 @@ void codegen_node_single(ParserContext *ctx, ASTNode *node, FILE *out)
                     {
                         fprintf(out, ", ");
                     }
-                    fprintf(out, "section(\"%s\")", node->func.section);
+                    fprintf(out, "section(\"%s%s%s\")", SEGMENT_NAME_PREFIX, node->func.section, SEGMENT_NAME_SUFFIX);
                 }
 #undef EMIT_ATTR
                 fprintf(out, ")) ");
