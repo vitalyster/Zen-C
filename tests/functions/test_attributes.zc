@@ -6,7 +6,7 @@ fn compute() -> int {
 
 @deprecated("Use new_version instead")
 fn old_function() {
-    "deprecated!";
+    println "deprecated!";
 }
 
 @inline
@@ -94,8 +94,8 @@ test "function attributes" {
     var c = combined();
     assert(c == 100, "combined failed");
     
-    // @must_use: discarding should warn
-    compute();
+    // @must_use: result verified
+    assert(compute() == 42, "Checking must_use result");
     
     // Check constructor ran
     assert(init_called == 1, "Constructor attribute failed");
@@ -103,7 +103,7 @@ test "function attributes" {
     // Check noinline compiles and runs
     assert(complex_calc(10) == 20, "Noinline function failed");
     
-    "Function attributes OK";
+    println "Function attributes OK";
 }
 
 test "struct attributes" {
@@ -118,5 +118,5 @@ test "struct attributes" {
     // Normal struct has padding
     assert(sizeof(NormalStruct) == 8, "NormalStruct has padding");
     
-    "Struct attributes OK";
+    println "Struct attributes OK";
 }
