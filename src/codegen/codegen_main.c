@@ -52,12 +52,12 @@ static ASTNode *topo_sort_structs(ASTNode *head)
         return NULL;
     }
 
-    // Count all nodes (structs + enums).
+    // Count all nodes (structs + enums + traits).
     int count = 0;
     ASTNode *n = head;
     while (n)
     {
-        if (n->type == NODE_STRUCT || n->type == NODE_ENUM)
+        if (n->type == NODE_STRUCT || n->type == NODE_ENUM || n->type == NODE_TRAIT)
         {
             count++;
         }
@@ -75,7 +75,7 @@ static ASTNode *topo_sort_structs(ASTNode *head)
     int idx = 0;
     while (n)
     {
-        if (n->type == NODE_STRUCT || n->type == NODE_ENUM)
+        if (n->type == NODE_STRUCT || n->type == NODE_ENUM || n->type == NODE_TRAIT)
         {
             nodes[idx++] = n;
         }
@@ -102,8 +102,8 @@ static ASTNode *topo_sort_structs(ASTNode *head)
                 continue;
             }
 
-            // Enums have no dependencies, emit first.
-            if (nodes[i]->type == NODE_ENUM)
+            // Enums and traits have no dependencies, emit first.
+            if (nodes[i]->type == NODE_ENUM || nodes[i]->type == NODE_TRAIT)
             {
                 order[order_idx++] = i;
                 emitted[i] = 1;
@@ -334,12 +334,12 @@ void codegen_node(ParserContext *ctx, ASTNode *node, FILE *out)
 
         print_type_defs(ctx, out, sorted);
         emit_enum_protos(sorted, out);
+        emit_trait_defs(kids, out);
 
         if (sorted)
         {
             emit_struct_defs(ctx, sorted, out);
         }
-        emit_trait_defs(kids, out);
 
         ASTNode *raw_iter = kids;
         while (raw_iter)
