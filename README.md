@@ -148,7 +148,6 @@ Create a new name for an existing type.
 alias ID = int;
 alias PointMap = Map<string, Point>;
 ```
-```
 
 ### 4. Functions & Lambdas
 
