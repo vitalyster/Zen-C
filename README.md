@@ -28,6 +28,35 @@ Join the discussion, share demos, ask questions, or report bugs in the official 
 
 ---
 
+## Index
+
+- [Overview](#overview)
+- [Community](#community)
+- [Quick Start](#quick-start)
+    - [Installation](#installation)
+    - [Usage](#usage)
+    - [Environment Variables](#environment-variables)
+- [Language Reference](#language-reference)
+    - [1. Variables and Constants](#1-variables-and-constants)
+    - [2. Primitive Types](#2-primitive-types)
+    - [3. Aggregate Types](#3-aggregate-types)
+    - [4. Functions & Lambdas](#4-functions--lambdas)
+    - [5. Control Flow](#5-control-flow)
+    - [6. Operators](#6-operators)
+    - [7. Printing and String Interpolation](#7-printing-and-string-interpolation)
+    - [8. Memory Management](#8-memory-management)
+    - [9. Object Oriented Programming](#9-object-oriented-programming)
+    - [10. Generics](#10-generics)
+    - [11. Concurrency (Async/Await)](#11-concurrency-asyncawait)
+    - [12. Metaprogramming](#12-metaprogramming)
+    - [13. Attributes](#13-attributes)
+    - [14. Inline Assembly](#14-inline-assembly)
+    - [15. Build Directives](#15-build-directives)
+- [Compiler Support & Compatibility](#compiler-support--compatibility)
+- [Contributing](#contributing)
+
+---
+
 ## Quick Start
 
 ### Installation
