@@ -25,7 +25,7 @@ impl Stack<T> {
     new_stack.len = self.len;
     new_stack.cap = self.cap;
     new_stack.data = malloc(sizeof(T) * new_stack.cap);
-    memcpy(new_stack.data, self.data, sizeof(T) * new_stack.cap);
+    memcpy(new_stack.data, self.data, sizeof(T) * new_stack.len);
     return new_stack;
   }
 
