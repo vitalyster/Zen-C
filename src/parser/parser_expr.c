@@ -1,7 +1,6 @@
 #include "../zen/zen_facts.h"
 #include "parser.h"
 #include <ctype.h>
-#include <libgen.h>
 #include <stdio.h>
 
 #include <stdlib.h>
