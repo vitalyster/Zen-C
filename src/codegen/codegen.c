@@ -896,6 +896,34 @@ void codegen_expression(ParserContext *ctx, ASTNode *node, FILE *out)
             fprintf(out, ")");
         }
         break;
+    case NODE_VA_START:
+        fprintf(out, "va_start(");
+        codegen_expression(ctx, node->va_start.ap, out);
+        fprintf(out, ", ");
+        codegen_expression(ctx, node->va_start.last_arg, out);
+        fprintf(out, ")");
+        break;
+    case NODE_VA_END:
+        fprintf(out, "va_end(");
+        codegen_expression(ctx, node->va_end.ap, out);
+        fprintf(out, ")");
+        break;
+    case NODE_VA_COPY:
+        fprintf(out, "va_copy(");
+        codegen_expression(ctx, node->va_copy.dest, out);
+        fprintf(out, ", ");
+        codegen_expression(ctx, node->va_copy.src, out);
+        fprintf(out, ")");
+        break;
+    case NODE_VA_ARG:
+    {
+        char *type_str = codegen_type_to_string(node->va_arg.type_info);
+        fprintf(out, "va_arg(");
+        codegen_expression(ctx, node->va_arg.ap, out);
+        fprintf(out, ", %s)", type_str);
+        free(type_str);
+        break;
+    }
     case NODE_EXPR_CAST:
         fprintf(out, "(%s)(", node->cast.target_type);
         codegen_expression(ctx, node->cast.expr, out);

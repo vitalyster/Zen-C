@@ -49,6 +49,7 @@ Join the discussion, share demos, ask questions, or report bugs in the official 
     - [4. Functions & Lambdas](#4-functions--lambdas)
         - [Functions](#functions)
         - [Lambdas (Closures)](#lambdas-closures)
+        - [Variadic Functions](#variadic-functions)
     - [5. Control Flow](#5-control-flow)
         - [Conditionals](#conditionals)
         - [Pattern Matching](#pattern-matching)
@@ -241,6 +242,17 @@ Anonymous functions that can capture their environment.
 var factor = 2;
 var double = x -> x * factor;  // Arrow syntax
 var full = fn(x: int) -> int { return x * factor; }; // Block syntax
+```
+
+#### Variadic Functions
+Functions can accept a variable number of arguments using `...` and the `va_list` type.
+```zc
+fn log(lvl: int, fmt: char*, ...) {
+    var ap: va_list;
+    va_start(ap, fmt);
+    vprintf(fmt, ap); // Use C stdio
+    va_end(ap);
+}
 ```
 
 ### 5. Control Flow
@@ -834,9 +846,10 @@ Zen C includes a standard library (`std`) covering essential functionality.
 | :--- | :--- | :--- |
 | **`std/vec.zc`** | Growable dynamic array `Vec<T>`. | [Docs](docs/std/vec.md) |
 | **`std/string.zc`** | Heap-allocated `String` type with UTF-8 support. | [Docs](docs/std/string.md) |
-| **`std/queue.zc`** | FIFO queue. | [Docs](docs/std/queue.md) |
+| **`std/queue.zc`** | FIFO queue (Ring Buffer). | [Docs](docs/std/queue.md) |
 | **`std/map.zc`** | Generic Hash Map `Map<V>`. | [Docs](docs/std/map.md) |
 | **`std/fs.zc`** | File system operations. | [Docs](docs/std/fs.md) |
+| **`std/io.zc`** | Standard Input/Output (`print`/`println`). | [Docs](docs/std/io.md) |
 | **`std/option.zc`** | Optional values (`Some`/`None`). | [Docs](docs/std/option.md) |
 | **`std/result.zc`** | Error handling (`Ok`/`Err`). | [Docs](docs/std/result.md) |
 | **`std/path.zc`** | Cross-platform path manipulation. | [Docs](docs/std/path.md) |

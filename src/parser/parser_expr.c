@@ -3324,6 +3324,92 @@ ASTNode *parse_expr_prec(ParserContext *ctx, Lexer *l, Precedence min_prec)
     after_unary:; // Label to skip standard creation if overloaded
     }
 
+    else if (is_token(t, "va_start"))
+    {
+        lexer_next(l);
+        if (lexer_peek(l).type != TOK_LPAREN)
+        {
+            zpanic_at(t, "Expected '(' after va_start");
+        }
+        lexer_next(l);
+        ASTNode *ap = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_COMMA)
+        {
+            zpanic_at(t, "Expected ',' in va_start");
+        }
+        ASTNode *last = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_RPAREN)
+        {
+            zpanic_at(t, "Expected ')' after va_start args");
+        }
+        lhs = ast_create(NODE_VA_START);
+        lhs->va_start.ap = ap;
+        lhs->va_start.last_arg = last;
+    }
+    else if (is_token(t, "va_end"))
+    {
+        lexer_next(l);
+        if (lexer_peek(l).type != TOK_LPAREN)
+        {
+            zpanic_at(t, "Expected '(' after va_end");
+        }
+        lexer_next(l);
+        ASTNode *ap = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_RPAREN)
+        {
+            zpanic_at(t, "Expected ')' after va_end arg");
+        }
+        lhs = ast_create(NODE_VA_END);
+        lhs->va_end.ap = ap;
+    }
+    else if (is_token(t, "va_copy"))
+    {
+        lexer_next(l);
+        if (lexer_peek(l).type != TOK_LPAREN)
+        {
+            zpanic_at(t, "Expected '(' after va_copy");
+        }
+        lexer_next(l);
+        ASTNode *dest = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_COMMA)
+        {
+            zpanic_at(t, "Expected ',' in va_copy");
+        }
+        ASTNode *src = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_RPAREN)
+        {
+            zpanic_at(t, "Expected ')' after va_copy args");
+        }
+        lhs = ast_create(NODE_VA_COPY);
+        lhs->va_copy.dest = dest;
+        lhs->va_copy.src = src;
+    }
+    else if (is_token(t, "va_arg"))
+    {
+        lexer_next(l);
+        if (lexer_peek(l).type != TOK_LPAREN)
+        {
+            zpanic_at(t, "Expected '(' after va_arg");
+        }
+        lexer_next(l);
+        ASTNode *ap = parse_expression(ctx, l);
+        if (lexer_next(l).type != TOK_COMMA)
+        {
+            zpanic_at(t, "Expected ',' in va_arg");
+        }
+
+        Type *tinfo = parse_type_formal(ctx, l);
+
+        if (lexer_next(l).type != TOK_RPAREN)
+        {
+            zpanic_at(t, "Expected ')' after va_arg args");
+        }
+
+        lhs = ast_create(NODE_VA_ARG);
+        lhs->va_arg.ap = ap;
+        lhs->va_arg.type_info = tinfo;
+        lhs->type_info = tinfo; // The expression evaluates to this type
+    }
     else if (is_token(t, "sizeof"))
     {
         lexer_next(l);

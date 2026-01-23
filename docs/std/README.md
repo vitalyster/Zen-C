@@ -2,6 +2,7 @@
 
 - [Env (Environment)](./env.md) - Process environment variables.
 - [File System (FS)](./fs.md) - File I/O and directory operations.
+- [IO](./io.md) - Standard Input/Output.
 - [Map](./map.md) - Hash map implementation.
 - [Option](./option.md) - Optional values (Some/None).
 - [Path](./path.md) - File path manipulation.
