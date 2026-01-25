@@ -30,7 +30,7 @@ jobs:
 
     - name: Build APE
       run: |
-        # Ensure PATH is updated in this step
+        # Ensure PATH is updated and build with tag-aware versioning
         export PATH="$HOME/cosmocc/bin:$PATH"
         make clean
         make ape

@@ -7,9 +7,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#ifdef __COSMOPOLITAN__
+#include "libc/dce.h"
+#define z_is_windows() IsWindows()
+#else
+#ifdef _WIN32
+#define z_is_windows() 1
+#else
+#define z_is_windows() 0
+#endif
+#endif
 
 // **ZEN VERSION**
+#ifndef ZEN_VERSION
 #define ZEN_VERSION "0.1.0"
+#endif
 
 // ** ANSI COLORS **
 #define COLOR_RESET "\033[0m"

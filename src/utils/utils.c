@@ -671,14 +671,17 @@ void scan_build_directives(ParserContext *ctx, const char *src)
                 {
                     printf("[zprep] Downloading %s...\n", filename);
                     char cmd[8192];
-#ifdef _WIN32
-                    // On Windows, try curl which is often built-in now
-                    sprintf(cmd, "curl -s -L \"%s\" -o \"%s\"", url, filename);
-#else
-                    // Try wget, then curl.
-                    sprintf(cmd, "wget -q \"%s\" -O \"%s\" || curl -s -L \"%s\" -o \"%s\"", url,
-                            filename, url, filename);
-#endif
+                    if (z_is_windows())
+                    {
+                        // On Windows, try curl which is often built-in now
+                        sprintf(cmd, "curl -s -L \"%s\" -o \"%s\"", url, filename);
+                    }
+                    else
+                    {
+                        // Try wget, then curl.
+                        sprintf(cmd, "wget -q \"%s\" -O \"%s\" || curl -s -L \"%s\" -o \"%s\"", url,
+                                filename, url, filename);
+                    }
                     if (system(cmd) != 0)
                     {
                         zwarn("Failed to download %s", url);
@@ -693,11 +696,12 @@ void scan_build_directives(ParserContext *ctx, const char *src)
                     libs++;
                 }
 
-#ifdef _WIN32
-                zwarn("pkg-config is usually not available on Windows. Build directive "
-                      "'pkg-config:%s' might fail.",
-                      libs);
-#endif
+                if (z_is_windows())
+                {
+                    zwarn("pkg-config is usually not available on Windows. Build directive "
+                          "'pkg-config:%s' might fail.",
+                          libs);
+                }
 
                 char cmd[4096];
                 sprintf(cmd, "pkg-config --cflags %s", libs);

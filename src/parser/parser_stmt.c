@@ -3179,11 +3179,14 @@ char *run_comptime_block(ParserContext *ctx, Lexer *l)
 
     char cmd[4096];
     char bin[1024];
-#ifdef _WIN32
-    sprintf(bin, "%s.exe", filename);
-#else
-    sprintf(bin, "%s.bin", filename);
-#endif
+    if (z_is_windows())
+    {
+        sprintf(bin, "%s.exe", filename);
+    }
+    else
+    {
+        sprintf(bin, "%s.bin", filename);
+    }
     sprintf(cmd, "%s %s -o %s", g_config.cc, filename, bin);
     if (!g_config.verbose)
     {
@@ -3199,11 +3202,14 @@ char *run_comptime_block(ParserContext *ctx, Lexer *l)
     sprintf(out_file, "%s.out", filename);
 
     // Platform-neutral execution
-#ifdef _WIN32
-    sprintf(cmd, "%s > %s", bin, out_file);
-#else
-    sprintf(cmd, "./%s > %s", bin, out_file);
-#endif
+    if (z_is_windows())
+    {
+        sprintf(cmd, "%s > %s", bin, out_file);
+    }
+    else
+    {
+        sprintf(cmd, "./%s > %s", bin, out_file);
+    }
 
     if (system(cmd) != 0)
     {

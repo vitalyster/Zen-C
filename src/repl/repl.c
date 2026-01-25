@@ -28,12 +28,10 @@ void run_repl(const char *self_path)
 
     char history_path[512];
     const char *home = getenv("HOME");
-#ifdef _WIN32
-    if (!home)
+    if (z_is_windows() && !home)
     {
         home = getenv("USERPROFILE");
     }
-#endif
     if (home)
     {
         snprintf(history_path, sizeof(history_path), "%s/.zprep_history", home);
@@ -273,9 +271,13 @@ void run_repl(const char *self_path)
                     {
                         tmpdir = getenv("TMP");
                     }
-                    if (!tmpdir)
+                    if (!tmpdir && !z_is_windows())
                     {
                         tmpdir = "/tmp";
+                    }
+                    if (!tmpdir)
+                    {
+                        tmpdir = ".";
                     }
                     snprintf(edit_path, sizeof(edit_path), "%s/zprep_edit_%d.zc", tmpdir, rand());
                     FILE *f = fopen(edit_path, "w");
@@ -658,9 +660,13 @@ void run_repl(const char *self_path)
                     {
                         tmpdir = getenv("TMP");
                     }
-                    if (!tmpdir)
+                    if (!tmpdir && !z_is_windows())
                     {
                         tmpdir = "/tmp";
+                    }
+                    if (!tmpdir)
+                    {
+                        tmpdir = ".";
                     }
                     snprintf(tmp_path, sizeof(tmp_path), "%s/zprep_repl_type_%d.zc", tmpdir,
                              rand());
@@ -752,9 +758,13 @@ void run_repl(const char *self_path)
                     {
                         tmpdir = getenv("TMP");
                     }
-                    if (!tmpdir)
+                    if (!tmpdir && !z_is_windows())
                     {
                         tmpdir = "/tmp";
+                    }
+                    if (!tmpdir)
+                    {
+                        tmpdir = ".";
                     }
                     snprintf(tmp_path, sizeof(tmp_path), "%s/zprep_repl_time_%d.zc", tmpdir,
                              rand());

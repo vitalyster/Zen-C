@@ -19,8 +19,9 @@ endif
 # Default: gcc
 # To build with clang: make CC=clang
 # To build with zig:   make CC="zig cc"
-CC = gcc
-CFLAGS = -Wall -Wextra -g -I./src -I./src/ast -I./src/parser -I./src/codegen -I./plugins -I./src/zen -I./src/utils -I./src/lexer -I./src/analysis -I./src/lsp
+# Version synchronization
+GIT_VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "0.1.0")
+CFLAGS = -Wall -Wextra -g -I./src -I./src/ast -I./src/parser -I./src/codegen -I./plugins -I./src/zen -I./src/utils -I./src/lexer -I./src/analysis -I./src/lsp -DZEN_VERSION=\"$(GIT_VERSION)\"
 TARGET = zc$(EXE)
 LIBS = -lm -lpthread -ldl
 
@@ -106,6 +107,7 @@ $(ZC_COM_BIN): $(ZC_ENTRY_O) $(SRCS)
 		PLUGINS= \
 		CC=$(COSMOCC) \
 		OBJ_DIR=obj-ape \
+		ZEN_VERSION="$(GIT_VERSION)" \
 		LIBS="$(abspath $(ZC_ENTRY_O)) -Wl,--wrap=main" \
 		TARGET="$(abspath $@)";
 
