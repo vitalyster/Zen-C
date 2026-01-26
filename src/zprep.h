@@ -51,78 +51,87 @@
 // ** GLOBAL STATE **
 extern char *g_current_filename;
 
+/**
+ * @brief Token types for the Lexer.
+ */
 typedef enum
 {
-    TOK_EOF = 0,
-    TOK_IDENT,
-    TOK_INT,
-    TOK_FLOAT,
-    TOK_STRING,
-    TOK_FSTRING,
-    TOK_CHAR,
-    TOK_LPAREN,
-    TOK_RPAREN,
-    TOK_LBRACE,
-    TOK_RBRACE,
-    TOK_LBRACKET,
-    TOK_RBRACKET,
-    TOK_LANGLE,
-    TOK_RANGLE,
-    TOK_COMMA,
-    TOK_COLON,
-    TOK_SEMICOLON,
-    TOK_OP,
-    TOK_AT,
-    TOK_DOTDOT,
-    TOK_DOTDOT_EQ,
-    TOK_DOTDOT_LT,
-    TOK_ARROW,
-    TOK_PIPE,
-    TOK_TEST,
-    TOK_ASSERT,
-    TOK_SIZEOF,
-    TOK_DEF,
-    TOK_DEFER,
-    TOK_AUTOFREE,
-    TOK_QUESTION,
-    TOK_USE,
-    TOK_QQ,
-    TOK_QQ_EQ,
-    TOK_Q_DOT,
-    TOK_DCOLON,
-    TOK_TRAIT,
-    TOK_IMPL,
-    TOK_AND,
-    TOK_OR,
-    TOK_FOR,
-    TOK_COMPTIME,
-    TOK_ELLIPSIS,
-    TOK_UNION,
-    TOK_ASM,
-    TOK_VOLATILE,
-    TOK_ASYNC,
-    TOK_AWAIT,
-    TOK_PREPROC,
-    TOK_ALIAS,
-    TOK_COMMENT,
-    TOK_UNKNOWN
+    TOK_EOF = 0,    ///< End of File.
+    TOK_IDENT,      ///< Identifier (variable, function name).
+    TOK_INT,        ///< Integer literal.
+    TOK_FLOAT,      ///< Float literal.
+    TOK_STRING,     ///< String literal.
+    TOK_FSTRING,    ///< Formatted string literal (f"val is {x}").
+    TOK_CHAR,       ///< Character literal.
+    TOK_LPAREN,     ///< (
+    TOK_RPAREN,     ///< )
+    TOK_LBRACE,     ///< {
+    TOK_RBRACE,     ///< }
+    TOK_LBRACKET,   ///< [
+    TOK_RBRACKET,   ///< ]
+    TOK_LANGLE,     ///< <
+    TOK_RANGLE,     ///< >
+    TOK_COMMA,      ///< ,
+    TOK_COLON,      ///< :
+    TOK_SEMICOLON,  ///< ;
+    TOK_OP,         ///< General operator (e.g. +, *, /).
+    TOK_AT,         ///< @
+    TOK_DOTDOT,     ///< ..
+    TOK_DOTDOT_EQ,  ///< ..= (inclusive range).
+    TOK_DOTDOT_LT,  ///< ..< (exclusive range, explicit).
+    TOK_ARROW,      ///< -> or =>
+    TOK_PIPE,       ///< |> (pipe operator).
+    TOK_TEST,       ///< 'test' keyword.
+    TOK_ASSERT,     ///< 'assert' keyword.
+    TOK_SIZEOF,     ///< 'sizeof' keyword.
+    TOK_DEF,        ///< 'def' keyword.
+    TOK_DEFER,      ///< 'defer' keyword.
+    TOK_AUTOFREE,   ///< 'autofree' keyword.
+    TOK_QUESTION,   ///< ?
+    TOK_USE,        ///< 'use' keyword.
+    TOK_QQ,         ///< ?? (null coalescing).
+    TOK_QQ_EQ,      ///< ??=
+    TOK_Q_DOT,      ///< ?. (optional chaining).
+    TOK_DCOLON,     ///< ::
+    TOK_TRAIT,      ///< 'trait' keyword.
+    TOK_IMPL,       ///< 'impl' keyword.
+    TOK_AND,        ///< 'and' keyword.
+    TOK_OR,         ///< 'or' keyword.
+    TOK_FOR,        ///< 'for' keyword.
+    TOK_COMPTIME,   ///< 'comptime' keyword.
+    TOK_ELLIPSIS,   ///< ...
+    TOK_UNION,      ///< 'union' keyword.
+    TOK_ASM,        ///< 'asm' keyword.
+    TOK_VOLATILE,   ///< 'volatile' keyword.
+    TOK_ASYNC,      ///< 'async' keyword.
+    TOK_AWAIT,      ///< 'await' keyword.
+    TOK_PREPROC,    ///< Preprocessor directive (#...).
+    TOK_ALIAS,      ///< 'alias' keyword.
+    TOK_COMMENT,    ///< Comment (usually skipped).
+    TOK_UNKNOWN     ///< Unknown token.
 } TokenType;
 
+/**
+ * @brief Represents a source token.
+ */
 typedef struct
 {
-    TokenType type;
-    const char *start;
-    int len;
-    int line;
-    int col;
+    TokenType type;     ///< Type of the token.
+    const char *start;  ///< Pointer to start of token in source buffer.
+    int len;            ///< Length of the token text.
+    int line;           ///< Line number (1-based).
+    int col;            ///< Column number (1-based).
 } Token;
 
+/**
+ * @brief Lexer state.
+ */
 typedef struct
 {
-    const char *src;
-    int pos;
-    int line;
-    int col;
+    const char *src;    ///< Source code buffer.
+    int pos;            ///< Current position index.
+    int line;           ///< Current line number.
+    int col;            ///< Current column number.
 } Lexer;
 
 void lexer_init(Lexer *l, const char *src);
@@ -189,30 +198,32 @@ void warn_array_bounds(Token t, int index, int size);
 void warn_format_string(Token t, int arg_num, const char *expected, const char *got);
 void warn_null_pointer(Token t, const char *expr);
 
-// ** Compiler Config **
+/**
+ * @brief Compiler configuration and flags.
+ */
 typedef struct
 {
-    char *input_file;
-    char *output_file;
+    char *input_file;       ///< Input source file path.
+    char *output_file;      ///< Output binary file path.
 
     // Modes.
-    int mode_run;        // 1 if 'run' command.
-    int mode_check;      // 1 if 'check' command or --check.
-    int emit_c;          // 1 if --emit-c (keep C file).
-    int verbose;         // 1 if --verbose.
-    int quiet;           // 1 if --quiet.
-    int no_zen;          // 1 if --no-zen (disable zen facts).
-    int repl_mode;       // 1 if --repl (internal flag for REPL usage).
-    int is_freestanding; // 1 if --freestanding.
-    int mode_transpile;  // 1 if 'transpile' command.
-    int use_cpp;         // 1 if --cpp (emit C++ compatible code).
-    int use_cuda;        // 1 if --cuda (emit CUDA-compatible code).
+    int mode_run;           ///< 1 if 'run' command (compile & execute).
+    int mode_check;         ///< 1 if 'check' command (syntax/type check only).
+    int emit_c;             ///< 1 if --emit-c (keep generated C file).
+    int verbose;            ///< 1 if --verbose.
+    int quiet;              ///< 1 if --quiet.
+    int no_zen;             ///< 1 if --no-zen (disable zen facts/easter eggs).
+    int repl_mode;          ///< 1 if --repl (internal flag for REPL usage).
+    int is_freestanding;    ///< 1 if --freestanding (no stdlib).
+    int mode_transpile;     ///< 1 if 'transpile' command (to C).
+    int use_cpp;            ///< 1 if --cpp (emit C++ compatible code).
+    int use_cuda;           ///< 1 if --cuda (emit CUDA-compatible code).
 
     // GCC Flags accumulator.
-    char gcc_flags[4096];
+    char gcc_flags[4096];   ///< Flags passed to the backend compiler.
 
     // C Compiler selection (default: gcc)
-    char cc[64];
+    char cc[64];            ///< Backend compiler command (e.g. "gcc", "clang").
 } CompilerConfig;
 
 extern CompilerConfig g_config;

@@ -32,95 +32,131 @@ ASTNode *parse_program(ParserContext *ctx, Lexer *l);
 extern ParserContext *g_parser_ctx;
 
 // Symbol table
+/**
+ * @brief Represents a symbol in the symbol table.
+ * 
+ * Used for variables, functions, and other named entities.
+ */
 typedef struct ZenSymbol
 {
-    char *name;
-    char *type_name;
-    Type *type_info;
-    int is_used;
-    int is_autofree;
-    Token decl_token;
-    int is_const_value;
-    int is_def;
-    int const_int_val;
-    int is_moved;
-    struct ZenSymbol *next;
+    char *name;             ///< Symbol name.
+    char *type_name;        ///< String representation of the type.
+    Type *type_info;        ///< Formal type definition.
+    int is_used;            ///< 1 if the symbol has been referenced.
+    int is_autofree;        ///< 1 if it requires automatic memory management (RAII).
+    Token decl_token;       ///< Token where the symbol was declared.
+    int is_const_value;     ///< 1 if it is a compile-time constant.
+    int is_def;             ///< 1 if it is a definition (vs declaration).
+    int const_int_val;      ///< Integer value if it is a constant.
+    int is_moved;           ///< 1 if the value has been moved (ownership transfer).
+    struct ZenSymbol *next; ///< Next symbol in the bucket/list (chaining).
 } ZenSymbol;
 
+/**
+ * @brief Represents a lexical scope (block).
+ * 
+ * Scopes form a hierarchy (parent pointer) and contain a list of symbols defined in that scope.
+ */
 typedef struct Scope
 {
-    ZenSymbol *symbols;
-    struct Scope *parent;
+    ZenSymbol *symbols;     ///< Linked list of symbols in this scope.
+    struct Scope *parent;   ///< Pointer to the parent scope (NULL for global).
 } Scope;
 
-// Function registry
+/**
+ * @brief Registry entry for a function signature.
+ * 
+ * Stores metadata about declared functions for type checking and call validation.
+ */
 typedef struct FuncSig
 {
-    char *name;
-    Token decl_token;
-    int total_args;
-    char **defaults;
-    Type **arg_types;
-    Type *ret_type;
-    int is_varargs;
-    int is_async;
-    int must_use;
-    struct FuncSig *next;
+    char *name;             ///< Function name.
+    Token decl_token;       ///< declaration token.
+    int total_args;         ///< Total argument count.
+    char **defaults;        ///< Default values for arguments (or NULL).
+    Type **arg_types;       ///< Argument types.
+    Type *ret_type;         ///< Return type.
+    int is_varargs;         ///< 1 if variadic.
+    int is_async;           ///< 1 if async.
+    int must_use;           ///< 1 if return value must be used.
+    struct FuncSig *next;   ///< Next function in registry.
 } FuncSig;
 
-// Lambda tracking
+/**
+ * @brief Tracks a lambda (anonymous function) within the parser.
+ */
 typedef struct LambdaRef
 {
-    ASTNode *node;
+    ASTNode *node;          ///< The AST node for the lambda.
     struct LambdaRef *next;
 } LambdaRef;
 
+/**
+ * @brief Template for a generic struct.
+ */
 typedef struct GenericTemplate
 {
-    char *name;
-    ASTNode *struct_node;
+    char *name;             ///< Template name.
+    ASTNode *struct_node;   ///< The struct AST node (containing generic params).
     struct GenericTemplate *next;
 } GenericTemplate;
 
+/**
+ * @brief Template for a generic function.
+ */
 typedef struct GenericFuncTemplate
 {
-    char *name;
-    char *generic_param;
-    ASTNode *func_node;
+    char *name;             ///< Template name.
+    char *generic_param;    ///< Generic parameters string (legacy).
+    ASTNode *func_node;     ///< The function AST node.
     struct GenericFuncTemplate *next;
 } GenericFuncTemplate;
 
+/**
+ * @brief Template for a generic implementation block.
+ */
 typedef struct GenericImplTemplate
 {
-    char *struct_name;
-    char *generic_param;
-    ASTNode *impl_node;
+    char *struct_name;      ///< Target struct name.
+    char *generic_param;    ///< Generic parameters.
+    ASTNode *impl_node;     ///< The impl block AST node.
     struct GenericImplTemplate *next;
 } GenericImplTemplate;
 
+/**
+ * @brief Represents an imported source file (to prevent cycles/duplication).
+ */
 typedef struct ImportedFile
 {
-    char *path;
+    char *path;             ///< Absolute file path.
     struct ImportedFile *next;
 } ImportedFile;
 
-// Instantiation tracking
+/**
+ * @brief Tracks a concrete instantiation of a generic template.
+ */
 typedef struct Instantiation
 {
-    char *name;
-    char *template_name;
-    char *concrete_arg;
-    char *unmangled_arg; // For code substitution (e.g. "struct T*")
-    ASTNode *struct_node;
+    char *name;             ///< Mangled name of the instantiation (e.g. "Vec_int").
+    char *template_name;    ///< Original template name (e.g. "Vec").
+    char *concrete_arg;     ///< Concrete type argument string.
+    char *unmangled_arg;    ///< Unmangled argument for substitution code.
+    ASTNode *struct_node;   ///< The AST node of the instantiated struct.
     struct Instantiation *next;
 } Instantiation;
 
+/**
+ * @brief Reference to a parsed struct (list node).
+ */
 typedef struct StructRef
 {
     ASTNode *node;
     struct StructRef *next;
 } StructRef;
 
+/**
+ * @brief Definition of a struct (lookup cache).
+ */
 typedef struct StructDef
 {
     char *name;
@@ -128,152 +164,179 @@ typedef struct StructDef
     struct StructDef *next;
 } StructDef;
 
-// Type tracking
+/**
+ * @brief Track used slice types for generation.
+ */
 typedef struct SliceType
 {
     char *name;
     struct SliceType *next;
 } SliceType;
 
+/**
+ * @brief Track used tuple signatures for generation.
+ */
 typedef struct TupleType
 {
     char *sig;
     struct TupleType *next;
 } TupleType;
 
-// Enum tracking
+/**
+ * @brief Registry of enum variants.
+ */
 typedef struct EnumVariantReg
 {
-    char *enum_name;
-    char *variant_name;
-    int tag_id;
+    char *enum_name;        ///< Name of the enum.
+    char *variant_name;     ///< Name of the variant.
+    int tag_id;             ///< Integration tag value.
     struct EnumVariantReg *next;
 } EnumVariantReg;
 
-// Deprecated function tracking
+/**
+ * @brief Functions marked as deprecated.
+ */
 typedef struct DeprecatedFunc
 {
     char *name;
-    char *reason; // Optional reason message
+    char *reason;           ///< Optional reason for deprecation.
     struct DeprecatedFunc *next;
 } DeprecatedFunc;
 
-// Module system
+/**
+ * @brief Represents a module (namespace/file).
+ */
 typedef struct Module
 {
-    char *alias;
-    char *path;
-    char *base_name;
-    int is_c_header;
+    char *alias;            ///< Import alias (or default name).
+    char *path;             ///< File path.
+    char *base_name;        ///< Base name of the module.
+    int is_c_header;        ///< 1 if this is a C header import.
     struct Module *next;
 } Module;
 
+/**
+ * @brief Symbol imported via selective import (import { X }).
+ */
 typedef struct SelectiveImport
 {
-    char *symbol;
-    char *alias;
-    char *source_module;
+    char *symbol;           ///< Symbol name.
+    char *alias;            ///< Local alias.
+    char *source_module;    ///< Origin module.
     struct SelectiveImport *next;
 } SelectiveImport;
 
-// Impl cache
+/**
+ * @brief Registry for trait implementations.
+ */
 typedef struct ImplReg
 {
-    char *trait;
-    char *strct;
+    char *trait;            ///< Trait name.
+    char *strct;            ///< Implementing struct name.
     struct ImplReg *next;
 } ImplReg;
 
-// Plugin tracking
+/**
+ * @brief Loaded compiler plugin.
+ */
 typedef struct ImportedPlugin
 {
-    char *name;  // Original plugin name (for example, "brainfuck")
-    char *alias; // Optional alias (for example, "bf"), NULL if no alias
+    char *name;             ///< Plugin name (e.g., "brainfuck").
+    char *alias;            ///< Optional usage alias.
     struct ImportedPlugin *next;
 } ImportedPlugin;
 
+/**
+ * @brief Type alias definition.
+ */
 typedef struct TypeAlias
 {
-    char *alias;
-    char *original_type;
+    char *alias;            ///< New type name.
+    char *original_type;    ///< Original type.
     struct TypeAlias *next;
 } TypeAlias;
 
+/**
+ * @brief Global compilation state and symbol table.
+ * 
+ * ParserContext maintains the state of the compiler during parsing and analysis.
+ * It holds symbol tables, type definitions, function registries, and configuration.
+ */
 struct ParserContext
 {
-    Scope *current_scope;
-    FuncSig *func_registry;
+    Scope *current_scope;       ///< Current lexical scope for variable lookup.
+    FuncSig *func_registry;     ///< Registry of declared function signatures.
 
     // Lambdas
-    LambdaRef *global_lambdas;
-    int lambda_counter;
+    LambdaRef *global_lambdas;  ///< List of all lambdas generated during parsing.
+    int lambda_counter;         ///< Counter for generating unique lambda IDs.
 
 // Generics
 #define MAX_KNOWN_GENERICS 1024
-    char *known_generics[MAX_KNOWN_GENERICS];
-    int known_generics_count;
-    GenericTemplate *templates;
-    GenericFuncTemplate *func_templates;
-    GenericImplTemplate *impl_templates;
+    char *known_generics[MAX_KNOWN_GENERICS]; ///< Stack of currently active generic type parameters.
+    int known_generics_count;                 ///< Count of active generic parameters.
+    GenericTemplate *templates;               ///< Struct generic templates.
+    GenericFuncTemplate *func_templates;      ///< Function generic templates.
+    GenericImplTemplate *impl_templates;      ///< Implementation block templates.
 
     // Instantiations
-    Instantiation *instantiations;
-    ASTNode *instantiated_structs;
-    ASTNode *instantiated_funcs;
+    Instantiation *instantiations;      ///< Cache of instantiated generic types.
+    ASTNode *instantiated_structs;      ///< List of AST nodes for instantiated structs.
+    ASTNode *instantiated_funcs;        ///< List of AST nodes for instantiated functions.
 
     // Structs/Enums
-    StructRef *parsed_structs_list;
-    StructRef *parsed_enums_list;
-    StructRef *parsed_funcs_list;
-    StructRef *parsed_impls_list;
-    StructRef *parsed_globals_list;
-    StructDef *struct_defs;
-    EnumVariantReg *enum_variants;
-    ImplReg *registered_impls;
+    StructRef *parsed_structs_list;     ///< List of all parsed struct nodes.
+    StructRef *parsed_enums_list;       ///< List of all parsed enum nodes.
+    StructRef *parsed_funcs_list;       ///< List of all parsed function nodes.
+    StructRef *parsed_impls_list;       ///< List of all parsed impl blocks.
+    StructRef *parsed_globals_list;     ///< List of all parsed global variables.
+    StructDef *struct_defs;             ///< Registry of struct definitions (map name -> node).
+    EnumVariantReg *enum_variants;      ///< Registry of enum variants for global lookup.
+    ImplReg *registered_impls;          ///< Cache of type/trait implementations.
 
     // Types
-    SliceType *used_slices;
-    TupleType *used_tuples;
-    TypeAlias *type_aliases;
+    SliceType *used_slices;             ///< Cache of generated slice types.
+    TupleType *used_tuples;             ///< Cache of generated tuple types.
+    TypeAlias *type_aliases;            ///< Defined type aliases.
 
     // Modules/Imports
-    Module *modules;
-    SelectiveImport *selective_imports;
-    char *current_module_prefix;
-    ImportedFile *imported_files;
-    ImportedPlugin *imported_plugins; // Plugin imports
+    Module *modules;                    ///< List of registered modules.
+    SelectiveImport *selective_imports; ///< Symbols imported via `import { ... }`.
+    char *current_module_prefix;        ///< Prefix for current module (namespacing).
+    ImportedFile *imported_files;       ///< List of files already included/imported.
+    ImportedPlugin *imported_plugins;   ///< List of active plugins.
 
     // Config/State
-    char *current_impl_struct;
-    ASTNode *current_impl_methods; // Head of method list for current impl block
+    char *current_impl_struct;          ///< Name of struct currently being implemented (in impl block).
+    ASTNode *current_impl_methods;      ///< Head of method list for current impl block.
 
     // Internal tracking
-    DeprecatedFunc *deprecated_funcs;
+    DeprecatedFunc *deprecated_funcs;   ///< Registry of deprecated functions.
 
     // LSP / Fault Tolerance
-    int is_fault_tolerant;
-    void *error_callback_data;
-    void (*on_error)(void *data, Token t, const char *msg);
+    int is_fault_tolerant;              ///< 1 if parser should recover from errors (LSP mode).
+    void *error_callback_data;          ///< User data for error callback.
+    void (*on_error)(void *data, Token t, const char *msg); ///< Callback for reporting errors.
 
     // LSP: Flat symbol list (persists after parsing for LSP queries)
-    ZenSymbol *all_symbols;
+    ZenSymbol *all_symbols;             ///< comprehensive list of all symbols seen.
 
     // External C interop: suppress undefined warnings for external symbols
-    int has_external_includes; // Set when include <...> is used
-    char **extern_symbols;     // Explicitly declared extern symbols
-    int extern_symbol_count;
+    int has_external_includes;          ///< Set when `#include <...>` is used.
+    char **extern_symbols;              ///< Explicitly declared extern symbols.
+    int extern_symbol_count;            ///< Count of external symbols.
 
     // Codegen state:
-    FILE *hoist_out;    // For plugins to hoist code to file scope
-    int skip_preamble;  // If 1, codegen_node(NODE_ROOT) won't emit preamble
-    int is_repl;        // REPL mode flag
-    int has_async;      // Track if async features are used
-    int in_defer_block; // Track if currently parsing inside a defer block
+    FILE *hoist_out;    ///< File stream for hoisting code (e.g. from plugins).
+    int skip_preamble;  ///< If 1, codegen won't emit standard preamble (includes etc).
+    int is_repl;        ///< 1 if running in REPL mode.
+    int has_async;      ///< 1 if async/await features are used in the program.
+    int in_defer_block; ///< 1 if currently parsing inside a defer block.
 
     // Type Validation
-    struct TypeUsage *pending_type_validations;
-    int is_speculative;  // Flag to suppress side effects during speculative parsing
-    int silent_warnings; // Suppress warnings (for example, during codegen interpolation)
+    struct TypeUsage *pending_type_validations; ///< List of types to validate after parsing.
+    int is_speculative;  ///< Flag to suppress side effects during speculative parsing.
+    int silent_warnings; ///< Suppress warnings (e.g., during codegen interpolation).
 };
 
 typedef struct TypeUsage
