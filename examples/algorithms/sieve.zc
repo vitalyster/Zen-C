@@ -2,7 +2,7 @@
 import "std.zc"
 
 fn main() {
-    const LIMIT = 50;
+    def LIMIT = 50;
     
     let is_prime: bool[LIMIT];
     for i in 0..LIMIT { is_prime[i] = true; }

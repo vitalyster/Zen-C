@@ -15,7 +15,7 @@ fn add_kernel(a: float*, b: float*, c: float*, n: int) {
 }
 
 fn main() {
-    const N = 1024;
+    def N = 1024;
     
     "=> Zen C CUDA Vector Addition";
     "-> Vector size: {N} elements";
@@ -43,7 +43,7 @@ fn main() {
     cuda_copy_to_device(d_a, h_a, N * sizeof(float));
     cuda_copy_to_device(d_b, h_b, N * sizeof(float));
     
-    const BLOCK_SIZE = 256;
+    def BLOCK_SIZE = 256;
     let num_blocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
     
     "-> Launching: {num_blocks} blocks x {BLOCK_SIZE} threads";

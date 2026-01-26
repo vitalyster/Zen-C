@@ -194,7 +194,7 @@ fn benchmark_matrix_multiply(N: int) {
     cuda_copy_to_device(d_B, h_B, size * sizeof(float));
 
     // Configure grid
-    const BLOCK_SIZE = 16;
+    def BLOCK_SIZE = 16;
     let blocks_per_grid = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
     "-> Launching kernel: {blocks_per_grid}x{blocks_per_grid} blocks, {BLOCK_SIZE}x{BLOCK_SIZE} threads each";
@@ -232,8 +232,8 @@ fn benchmark_monte_carlo_pi(num_samples: u64) {
 
     "-> Estimating Pi with {num_samples} samples";
 
-    const BLOCK_SIZE = 256;
-    const NUM_BLOCKS = 1024;
+    def BLOCK_SIZE = 256;
+    def NUM_BLOCKS = 1024;
     let total_threads = BLOCK_SIZE * NUM_BLOCKS;
 
     // Allocate memory
@@ -342,7 +342,7 @@ fn benchmark_nbody(num_bodies: int, num_steps: int) {
     cuda_copy_to_device(d_vy, h_vy, num_bodies * sizeof(float));
     cuda_copy_to_device(d_vz, h_vz, num_bodies * sizeof(float));
 
-    const BLOCK_SIZE = 256;
+    def BLOCK_SIZE = 256;
     let num_blocks = (num_bodies + BLOCK_SIZE - 1) / BLOCK_SIZE;
     let dt = 0.01f;
 
