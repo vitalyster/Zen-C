@@ -700,7 +700,7 @@ static ASTNode *generate_derive_impls(ParserContext *ctx, ASTNode *strct, char *
         {
             // Simplistic Debug for now, I know.
             code = xmalloc(1024);
-            sprintf(code, "impl %s { fn to_string(self) -> char* { return \"%s { ... }\"; } }",
+            sprintf(code, "impl %s { fn to_string(self) -> char* { return \"%s {{ ... }}\"; } }",
                     name, name);
         }
         else if (0 == strcmp(trait, "Copy"))

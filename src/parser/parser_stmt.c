@@ -1877,7 +1877,7 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
         lexer_next(&lookahead);
         TokenType next_type = lexer_peek(&lookahead).type;
 
-        if (next_type == TOK_SEMICOLON || next_type == TOK_DOTDOT)
+        if (next_type == TOK_SEMICOLON || next_type == TOK_DOTDOT || next_type == TOK_RBRACE)
         {
             Token t = lexer_next(l); // consume string
 
@@ -1894,8 +1894,7 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
                 inner[t.len - 2] = 0;
             }
 
-            // ; means println (end of line), .. means print (continuation)
-            int is_ln = (next_type == TOK_SEMICOLON);
+            int is_ln = (next_type == TOK_SEMICOLON || next_type == TOK_RBRACE);
             char **used_syms = NULL;
             int used_count = 0;
             char *code =
@@ -1913,6 +1912,7 @@ ASTNode *parse_statement(ParserContext *ctx, Lexer *l)
                     lexer_next(l); // consume optional ;
                 }
             }
+            // If TOK_RBRACE, do not consume it, so parse_block can see it and terminate loop.
 
             ASTNode *n = ast_create(NODE_RAW_STMT);
             // Append semicolon to Statement Expression to make it a valid statement

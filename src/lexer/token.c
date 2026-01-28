@@ -149,6 +149,14 @@ Token lexer_next(Lexer *l)
         {
             return (Token){TOK_DEF, s, 3, start_line, start_col};
         }
+        if (len == 5 && strncmp(s, "trait", 5) == 0)
+        {
+            return (Token){TOK_TRAIT, s, 5, start_line, start_col};
+        }
+        if (len == 4 && strncmp(s, "impl", 4) == 0)
+        {
+            return (Token){TOK_IMPL, s, 4, start_line, start_col};
+        }
         if (len == 8 && strncmp(s, "autofree", 8) == 0)
         {
             return (Token){TOK_AUTOFREE, s, 8, start_line, start_col};

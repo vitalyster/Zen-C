@@ -884,8 +884,7 @@ void codegen_node_single(ParserContext *ctx, ASTNode *node, FILE *out)
             }
             else
             {
-                fprintf(out, "    ZC_AUTO %s = _tmp_%d.%s;\n", node->destruct.names[0], id,
-                        check);
+                fprintf(out, "    ZC_AUTO %s = _tmp_%d.%s;\n", node->destruct.names[0], id, check);
             }
         }
         else
@@ -903,8 +902,8 @@ void codegen_node_single(ParserContext *ctx, ASTNode *node, FILE *out)
                     }
                     else
                     {
-                        fprintf(out, "    ZC_AUTO %s = _tmp_%d.%s;\n", node->destruct.names[i],
-                                id, field);
+                        fprintf(out, "    ZC_AUTO %s = _tmp_%d.%s;\n", node->destruct.names[i], id,
+                                field);
                     }
                 }
                 else
@@ -916,8 +915,8 @@ void codegen_node_single(ParserContext *ctx, ASTNode *node, FILE *out)
                     }
                     else
                     {
-                        fprintf(out, "    ZC_AUTO %s = _tmp_%d.v%d;\n", node->destruct.names[i],
-                                id, i);
+                        fprintf(out, "    ZC_AUTO %s = _tmp_%d.v%d;\n", node->destruct.names[i], id,
+                                i);
                     }
                 }
             }

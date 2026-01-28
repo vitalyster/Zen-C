@@ -935,6 +935,17 @@ static ASTNode *create_fstring_block(ParserContext *ctx, const char *content)
             free(txt);
         }
 
+        // Handle escape {{
+        if (brace[1] == '{')
+        {
+            ASTNode *cat = ast_create(NODE_RAW_STMT);
+            cat->raw_stmt.content = xstrdup("strcat(_b, \"{\");");
+            tail->next = cat;
+            tail = cat;
+            cur = brace + 2;
+            continue;
+        }
+
         char *end_brace = strchr(brace, '}');
         if (!end_brace)
         {
@@ -1100,8 +1111,30 @@ static ASTNode *parse_float_literal(Token t)
 }
 
 // Parse string literal
-static ASTNode *parse_string_literal(Token t)
+static ASTNode *parse_string_literal(ParserContext *ctx, Token t)
 {
+    // Check for implicit interpolation
+    int has_interpolation = 0;
+    for (int i = 1; i < t.len - 1; i++)
+    {
+        if (t.start[i] == '{')
+        {
+            has_interpolation = 1;
+            break;
+        }
+    }
+
+    if (has_interpolation)
+    {
+
+        char *inner = xmalloc(t.len);
+        strncpy(inner, t.start + 1, t.len - 2);
+        inner[t.len - 2] = 0;
+        ASTNode *node = create_fstring_block(ctx, inner);
+        free(inner);
+        return node;
+    }
+
     ASTNode *node = ast_create(NODE_EXPR_LITERAL);
     node->literal.type_kind = LITERAL_STRING;
     node->literal.string_val = xmalloc(t.len);
@@ -1276,7 +1309,7 @@ ASTNode *parse_primary(ParserContext *ctx, Lexer *l)
     }
     else if (t.type == TOK_STRING)
     {
-        node = parse_string_literal(t);
+        node = parse_string_literal(ctx, t);
     }
     else if (t.type == TOK_FSTRING)
     {
